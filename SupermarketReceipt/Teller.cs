@@ -4,33 +4,40 @@ namespace SupermarketReceipt
 {
     public class Teller
     {
-        private readonly SupermarketCatalog _catalog;
-        private readonly Dictionary<Product, Offer> _offers = new Dictionary<Product, Offer>();
+        private readonly ISupermarketCatalog _catalog;
+        private readonly List<Offer> _offers = new();
 
-        public Teller(SupermarketCatalog catalog)
+        public Teller(ISupermarketCatalog catalog)
         {
             _catalog = catalog;
         }
 
         public void AddSpecialOffer(SpecialOfferType offerType, Product product, double argument)
         {
-            _offers[product] = new Offer(offerType, product, argument);
+            _offers.Add(new Offer(offerType, product, argument));
         }
 
-        public Receipt ChecksOutArticlesFrom(ShoppingCart theCart)
+        public void AddSpecialOffer(SpecialOfferType offerType, List<Product> products, double argument)
+        {
+            _offers.Add(new Offer(offerType, products, argument));
+        }
+
+        public Receipt ChecksOutArticlesFrom(ShoppingCart shoppingCart)
         {
             var receipt = new Receipt();
-            var productQuantities = theCart.GetItems();
-            foreach (var pq in productQuantities)
+            var productQuantities = shoppingCart.GetItems();
+
+            foreach (var productQuantity in productQuantities)
             {
-                var p = pq.Product;
-                var quantity = pq.Quantity;
-                var unitPrice = _catalog.GetUnitPrice(p);
+                var product = productQuantity.Product;
+                var quantity = productQuantity.Quantity;
+                var unitPrice = _catalog.GetUnitPrice(product);
                 var price = quantity * unitPrice;
-                receipt.AddProduct(p, quantity, unitPrice, price);
+
+                receipt.AddProduct(product, quantity, unitPrice, price);
             }
 
-            theCart.HandleOffers(receipt, _offers, _catalog);
+            shoppingCart.HandleOffers(receipt, _offers, _catalog);
 
             return receipt;
         }

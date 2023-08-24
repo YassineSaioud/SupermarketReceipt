@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SupermarketReceipt
 {
     public enum SpecialOfferType
@@ -5,21 +7,30 @@ namespace SupermarketReceipt
         ThreeForTwo,
         TenPercentDiscount,
         TwoForAmount,
-        FiveForAmount
+        FiveForAmount,
+        Bundle
     }
 
     public class Offer
     {
-        private Product _product;
-
         public Offer(SpecialOfferType offerType, Product product, double argument)
         {
             OfferType = offerType;
             Argument = argument;
-            _product = product;
+            Product = product;
+        }
+
+        public Offer(SpecialOfferType offerType, List<Product> products, double argument)
+        {
+            OfferType = offerType;
+            Products = products;
+            Argument = argument;
         }
 
         public SpecialOfferType OfferType { get; }
+        public Product Product { get; }
+        public List<Product> Products { get; }
         public double Argument { get; }
     }
+
 }
