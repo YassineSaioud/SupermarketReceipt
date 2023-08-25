@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata;
 
 namespace SupermarketReceipt
 {
@@ -24,27 +25,27 @@ namespace SupermarketReceipt
         {
             Discount discount = default;
 
-            var products = offer.Products;
-            if (products.All(productQuantities.ContainsKey))
+            var bundleProducts = offer.Products;
+            if (bundleProducts.All(productQuantities.ContainsKey))
             {
-                double productsDiscountAmount = 0;
-                foreach (var discountAmount in from product in products
-                                               let productQuantity = productQuantities[product]
-                                               let unitPrice = catalog.GetUnitPrice(product)
-                                               let discountAmount = -productQuantity * unitPrice * offer.Argument / 100.0
-                                               select discountAmount)
+                double bundleProductsDiscountAmount = 0;
+
+                foreach (var bundleProduct in bundleProducts)
                 {
-                    productsDiscountAmount += discountAmount;
+                    var minProductQuantity = (int)bundleProducts.Min(product => productQuantities.FirstOrDefault(productQuantity => productQuantity.Key == product).Value);
+                    var unitPrice = catalog.GetUnitPrice(bundleProduct);
+                    var discountAmount = -minProductQuantity * unitPrice * offer.Argument / 100.0;
+
+                    bundleProductsDiscountAmount += discountAmount;
                 }
 
                 var description = $"{offer.Argument}% off bundle products";
 
-                discount = new Discount(products, description, productsDiscountAmount);
+                discount = new Discount(bundleProducts, description, bundleProductsDiscountAmount);
             }
 
             return discount;
         }
-
     }
 
     public class TenPercentDiscountCalculator
